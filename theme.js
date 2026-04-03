@@ -28,10 +28,11 @@
         zh: "a·common·place",
         en: "a·common·place",
       },
+      navHome: { zh: "首页", en: "Home" },
       navEssays: { zh: "文章", en: "Essays" },
       navNotes: { zh: "短札", en: "Notes" },
       navArchive: { zh: "归档", en: "Archive" },
-      heroEyebrow: { zh: "随笔、短札与代码", en: "ESSAYS, NOTES, AND CODE" },
+      heroEyebrow: { zh: "随笔与代码", en: "NOTES AND CODE" },
       heroTitle: { zh: "一个适合认真写字的博客。", en: "A blog built for deliberate writing." },
       heroLede: {
         zh: "参考传统技术博客的气质，但不做陈旧复刻。这里更像一本持续增补的工作日志：写程序、读系统、记问题，也保留一点缓慢和留白。",
@@ -179,6 +180,7 @@
       if (icon) {
         icon.innerHTML = iconMarkup;
       }
+      button.dataset.icon = theme;
       button.setAttribute("aria-label", `Switch to ${nextLabel} theme`);
       button.setAttribute("aria-pressed", String(theme === "dark"));
       button.setAttribute("title", `Switch to ${nextLabel} theme`);
