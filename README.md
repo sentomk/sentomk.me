@@ -6,9 +6,11 @@ A minimal static blog prototype focused on readable typography and simple struct
 
 - `index.html`: home page with featured post, recent essays, notes, and archive.
 - `posts/on-building-small-things.html`: sample article page.
-- `posts/markdown/`: markdown source files for posts.
-- `posts/markdown/_template.md`: front matter + markdown template.
-- `scripts/build_posts.py`: convert markdown files in `posts/markdown` to `posts/*.html`.
+- `posts/essays/`: markdown source files for essays.
+- `posts/essays/_template.md`: front matter + markdown template.
+- `posts/notes/`: JSONL source files for short notes.
+- `posts/notes/_template.jsonl`: one-line-per-note template.
+- `scripts/build_posts.py`: convert essay `.md` and note `.jsonl` files into `posts/*.html`.
 - `styles.css`: shared visual system and layout.
 
 ## Run
@@ -26,15 +28,35 @@ On Windows:
 - custom port: `scripts\serve\start_server.bat 8000`
 - PowerShell: `.\scripts\serve\start_server.ps1 -Port 8000`
 
-## Markdown -> HTML
+## Source -> HTML
 
-1. Create a markdown file in `posts/markdown/` (copy `_template.md` as a starting point).
+1. Create an essay markdown file in `posts/essays/` or a notes JSONL file in `posts/notes/`.
 2. Build html:
    - `python scripts/build_posts.py`
-3. The script generates article files in `posts/` (and skips files starting with `_`).
+3. The script scans `posts/` recursively for `.md` and `.jsonl` files, skips files starting with `_`, and generates HTML files in `posts/`.
 
 Optional:
-- Build a single file: `python scripts/build_posts.py --file posts/markdown/your-post.md`
+- Build a single file: `python scripts/build_posts.py --file posts/essays/your-post.md`
+- Build a notes file: `python scripts/build_posts.py --file posts/notes/your-notes.jsonl`
+
+## Notes JSONL
+
+Use one JSON object per line. Each note can define:
+
+- `title`
+- `slug`
+- `date`
+- `kicker`
+- `category`
+- `description`
+- `lede`
+- `body`
+
+The minimal useful entry is:
+
+```json
+{"slug":"your-note-slug","date":"2026-04-03","body":"这是短札正文。"}
+```
 
 ## GitHub Pages
 

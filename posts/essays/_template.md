@@ -6,7 +6,7 @@ kicker: Essay
 category: Engineering / Notes
 description: A short summary for SEO and preview cards.
 lede: One short lead paragraph shown under the article title.
-next_href: ../index.html#essays
+next_href: ../essay.html
 next_title: Another Post
 site_brand: Hide and Seek
 ---

@@ -3,12 +3,13 @@ from __future__ import annotations
 
 import argparse
 import html
+import json
 import re
 import sys
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
-DEFAULT_SOURCE_DIR = ROOT_DIR / "posts" / "markdown"
+DEFAULT_SOURCE_DIR = ROOT_DIR / "posts"
 DEFAULT_OUTPUT_DIR = ROOT_DIR / "posts"
 
 FRONT_MATTER_RE = re.compile(r"^---\s*\n(.*?)\n---\s*(?:\n|$)(.*)$", re.DOTALL)
@@ -52,6 +53,13 @@ def sanitize_slug(value: str, fallback: str) -> str:
 
 def normalize_spaces(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
+
+
+def make_excerpt(text: str, limit: int = 72) -> str:
+    collapsed = normalize_spaces(text)
+    if len(collapsed) <= limit:
+        return collapsed
+    return collapsed[: limit - 1].rstrip() + "…"
 
 
 def first_paragraph_text(markdown_body: str) -> str:
@@ -240,13 +248,13 @@ def markdown_to_html(markdown_body: str) -> str:
     return "\n".join(out)
 
 
-def build_post_html(title: str, metadata: dict[str, str], body_html: str) -> str:
+def build_post_html(title: str, metadata: dict[str, str], body_html: str, kind: str) -> str:
     date_text = metadata.get("date", "").strip()
-    kicker = metadata.get("kicker", "Essay").strip() or "Essay"
+    default_kicker = "Essay" if kind == "essay" else "Note"
+    kicker = metadata.get("kicker", default_kicker).strip() or default_kicker
     category = metadata.get("category", "").strip()
     lede = metadata.get("lede", "").strip()
     description = metadata.get("description", "").strip()
-    site_brand = metadata.get("site_brand", "Hide and Seek").strip() or "Hide and Seek"
 
     if not lede:
         lede = f"Article: {title}"
@@ -268,7 +276,8 @@ def build_post_html(title: str, metadata: dict[str, str], body_html: str) -> str
             f"下一篇：{html.escape(next_title)}</a>"
         )
     else:
-        next_nav = '<a href="../index.html#essays">更多文章</a>'
+        default_next_href = "../essay.html" if kind == "essay" else "../note.html"
+        next_nav = f'<a href="{default_next_href}">更多</a>'
 
     indented_body = "\n".join(
         f"            {line}" if line else "" for line in body_html.splitlines()
@@ -279,19 +288,70 @@ def build_post_html(title: str, metadata: dict[str, str], body_html: str) -> str
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
     <title>{html.escape(title)}</title>
     <meta name="description" content="{html.escape(description, quote=True)}" />
-    <link rel="stylesheet" href="../styles.css?v=2" />
+    <script>
+      try {{
+        const storedTheme = localStorage.getItem("theme");
+        const storedLanguage = localStorage.getItem("language");
+        if (storedTheme === "light" || storedTheme === "dark") {{
+          document.documentElement.dataset.theme = storedTheme;
+        }}
+        if (storedLanguage === "zh" || storedLanguage === "en") {{
+          document.documentElement.dataset.language = storedLanguage;
+          document.documentElement.lang = storedLanguage === "zh" ? "zh-CN" : "en";
+        }}
+      }} catch (error) {{
+        console.warn("Preferences could not be restored.", error);
+      }}
+    </script>
+    <link rel="stylesheet" href="../styles.css?v=7" />
   </head>
   <body class="post-page">
     <div class="page-shell">
       <header class="site-header site-header--compact">
         <div class="site-header__inner">
-          <a class="site-brand" href="../index.html">{html.escape(site_brand)}</a>
+          <div class="site-links" aria-label="Social links">
+            <a class="site-links__item" href="https://github.com/sentomk" aria-label="GitHub" title="GitHub">
+              <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                <path d="M12 2.25a10 10 0 0 0-3.16 19.49c.5.09.68-.21.68-.48v-1.7c-2.78.6-3.37-1.18-3.37-1.18a2.66 2.66 0 0 0-1.12-1.47c-.92-.63.07-.62.07-.62a2.11 2.11 0 0 1 1.54 1.03a2.15 2.15 0 0 0 2.94.84a2.17 2.17 0 0 1 .64-1.35c-2.22-.25-4.56-1.11-4.56-4.95a3.87 3.87 0 0 1 1.03-2.68a3.58 3.58 0 0 1 .1-2.65s.84-.27 2.75 1.02a9.44 9.44 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02a3.58 3.58 0 0 1 .1 2.65a3.87 3.87 0 0 1 1.03 2.68c0 3.85-2.34 4.69-4.57 4.94a2.43 2.43 0 0 1 .69 1.89v2.8c0 .27.18.58.69.48A10 10 0 0 0 12 2.25Z"></path>
+              </svg>
+            </a>
+            <a class="site-links__item" href="mailto:sentomk@pm.me" aria-label="Email" title="Email">
+              <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                <path d="M4.5 6.75h15a1.5 1.5 0 0 1 1.5 1.5v7.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 15.75v-7.5a1.5 1.5 0 0 1 1.5-1.5Z"></path>
+                <path d="m4 8l8 6l8-6"></path>
+              </svg>
+            </a>
+            <a class="site-links__item" href="https://www.linkedin.com/in/sentomk" aria-label="LinkedIn" title="LinkedIn">
+              <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                <rect x="4.25" y="4.25" width="15.5" height="15.5" rx="2.2"></rect>
+                <path d="M8.2 10.1v5.85"></path>
+                <path d="M8.2 8.2h.01"></path>
+                <path d="M12 15.95V12.8c0-1.15.62-1.9 1.72-1.9c1 0 1.48.68 1.48 1.9v3.15"></path>
+                <path d="M12 10.1v.92"></path>
+              </svg>
+            </a>
+            <a class="site-links__item site-links__item--hn" href="https://news.ycombinator.com/user?id=sentomk" aria-label="Hacker News" title="Hacker News">
+              <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                <rect x="4" y="4" width="16" height="16" rx="1.6"></rect>
+                <path d="M9 8l3 4l3-4"></path>
+                <path d="M12 12v4"></path>
+              </svg>
+            </a>
+          </div>
           <nav class="site-nav" aria-label="Primary">
             <a href="../index.html">首页</a>
-            <a href="../index.html#essays">文章</a>
+            <a href="../essay.html">文章</a>
+            <a href="../note.html">短札</a>
             <a href="../index.html#archive">归档</a>
+            <span class="site-nav__sep" aria-hidden="true">|</span>
+            <button class="theme-toggle" type="button" aria-label="切换主题">
+              <span class="theme-toggle__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false"></svg>
+              </span>
+            </button>
           </nav>
         </div>
       </header>
@@ -315,12 +375,13 @@ def build_post_html(title: str, metadata: dict[str, str], body_html: str) -> str
         </nav>
       </main>
     </div>
+    <script src="../ui.js?v=4"></script>
   </body>
 </html>
 """
 
 
-def build_one(markdown_path: Path, output_dir: Path) -> Path:
+def build_markdown_file(markdown_path: Path, output_dir: Path) -> list[Path]:
     raw = markdown_path.read_text(encoding="utf-8")
     metadata, markdown_body = parse_front_matter(raw)
 
@@ -332,18 +393,81 @@ def build_one(markdown_path: Path, output_dir: Path) -> Path:
     slug = sanitize_slug(metadata.get("slug", ""), markdown_path.stem)
     output_path = output_dir / f"{slug}.html"
 
-    output_html = build_post_html(title, metadata, body_html)
-    output_path.write_text(output_html, encoding="utf-8", newline="\n")
-    return output_path
+    output_html = build_post_html(title, metadata, body_html, kind="essay")
+    output_path.write_text(output_html, encoding="utf-8")
+    return [output_path]
+
+
+def parse_jsonl_entries(jsonl_path: Path) -> list[dict[str, str]]:
+    entries: list[dict[str, str]] = []
+
+    for index, raw_line in enumerate(jsonl_path.read_text(encoding="utf-8").splitlines(), start=1):
+        line = raw_line.strip()
+        if not line:
+            continue
+        try:
+            payload = json.loads(line)
+        except json.JSONDecodeError as error:
+            raise ValueError(f"{jsonl_path}:{index}: invalid JSON: {error.msg}") from error
+
+        if not isinstance(payload, dict):
+            raise ValueError(f"{jsonl_path}:{index}: each JSONL line must be an object")
+
+        entry = {str(key).strip().lower(): str(value).strip() for key, value in payload.items()}
+        if not entry.get("body") and not entry.get("content"):
+            raise ValueError(f"{jsonl_path}:{index}: note entry must include body or content")
+        entries.append(entry)
+
+    return entries
+
+
+def build_jsonl_file(jsonl_path: Path, output_dir: Path) -> list[Path]:
+    generated: list[Path] = []
+    entries = parse_jsonl_entries(jsonl_path)
+
+    for index, entry in enumerate(entries, start=1):
+        body_markdown = entry.get("body", "").strip() or entry.get("content", "").strip()
+        if "lede" not in entry or not entry["lede"].strip():
+            entry["lede"] = first_paragraph_text(body_markdown)
+        if "description" not in entry or not entry["description"].strip():
+            entry["description"] = entry["lede"]
+
+        title = entry.get("title", "").strip()
+        if not title:
+            fallback_title = entry["lede"] or f"Note {index}"
+            title = make_excerpt(fallback_title, limit=48)
+
+        slug_seed = entry.get("slug", "").strip() or f"{jsonl_path.stem}-{index:02d}"
+        slug = sanitize_slug(slug_seed, f"{jsonl_path.stem}-{index:02d}")
+        output_path = output_dir / f"{slug}.html"
+
+        if "next_href" not in entry or not entry["next_href"].strip():
+            entry["next_href"] = "../note.html"
+
+        body_html = markdown_to_html(body_markdown)
+        output_html = build_post_html(title, entry, body_html, kind="note")
+        output_path.write_text(output_html, encoding="utf-8")
+        generated.append(output_path)
+
+    return generated
+
+
+def build_file(source_path: Path, output_dir: Path) -> list[Path]:
+    suffix = source_path.suffix.lower()
+    if suffix == ".md":
+        return build_markdown_file(source_path, output_dir)
+    if suffix == ".jsonl":
+        return build_jsonl_file(source_path, output_dir)
+    raise ValueError(f"Unsupported source format: {source_path}")
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Build blog post HTML files from Markdown.")
+    parser = argparse.ArgumentParser(description="Build blog post HTML files from Markdown and JSONL.")
     parser.add_argument(
         "--source",
         type=Path,
         default=DEFAULT_SOURCE_DIR,
-        help="Markdown source directory (default: posts/markdown).",
+        help="Source directory (default: posts).",
     )
     parser.add_argument(
         "--output",
@@ -355,9 +479,16 @@ def parse_args() -> argparse.Namespace:
         "--file",
         type=Path,
         default=None,
-        help="Build a single markdown file.",
+        help="Build a single .md or .jsonl file.",
     )
     return parser.parse_args()
+
+
+def format_output_path(path: Path) -> str:
+    try:
+        return str(path.relative_to(ROOT_DIR))
+    except ValueError:
+        return str(path)
 
 
 def main() -> int:
@@ -371,27 +502,39 @@ def main() -> int:
         if not target.exists():
             print(f"[error] File not found: {target}")
             return 1
-        generated = build_one(target, output_dir)
-        print(f"[ok] {generated.relative_to(ROOT_DIR)}")
+        try:
+            generated_files = build_file(target, output_dir)
+        except ValueError as error:
+            print(f"[error] {error}")
+            return 1
+        for generated in generated_files:
+            print(f"[ok] {format_output_path(generated)}")
         return 0
 
     if not source_dir.exists():
         print(f"[error] Source directory not found: {source_dir}")
         return 1
 
-    markdown_files = sorted(
+    source_files = sorted(
         path
-        for path in source_dir.glob("*.md")
-        if path.is_file() and not path.name.startswith("_")
+        for path in source_dir.rglob("*")
+        if path.is_file()
+        and path.suffix.lower() in {".md", ".jsonl"}
+        and not path.name.startswith("_")
     )
 
-    if not markdown_files:
-        print(f"[warn] No markdown files found in {source_dir}")
+    if not source_files:
+        print(f"[warn] No source files found in {source_dir}")
         return 0
 
-    for md_path in markdown_files:
-        generated = build_one(md_path, output_dir)
-        print(f"[ok] {generated.relative_to(ROOT_DIR)}")
+    for source_path in source_files:
+        try:
+            generated_files = build_file(source_path, output_dir)
+        except ValueError as error:
+            print(f"[error] {error}")
+            return 1
+        for generated in generated_files:
+            print(f"[ok] {format_output_path(generated)}")
 
     return 0
 
