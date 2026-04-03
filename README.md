@@ -15,6 +15,17 @@ A minimal static blog prototype focused on readable typography and simple struct
 
 Open `index.html` directly in a browser, or serve the folder with any static file server.
 
+On macOS:
+
+- `./scripts/serve/start_server_macos.sh`
+- custom port: `./scripts/serve/start_server_macos.sh 8000`
+
+On Windows:
+
+- `scripts\serve\start_server.bat`
+- custom port: `scripts\serve\start_server.bat 8000`
+- PowerShell: `.\scripts\serve\start_server.ps1 -Port 8000`
+
 ## Markdown -> HTML
 
 1. Create a markdown file in `posts/markdown/` (copy `_template.md` as a starting point).

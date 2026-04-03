@@ -2,7 +2,7 @@
 set -euo pipefail
 
 PORT="${1:-8000}"
-ROOT="$(cd "$(dirname "$0")" && pwd)"
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$ROOT"
 
 if command -v python3 >/dev/null 2>&1; then

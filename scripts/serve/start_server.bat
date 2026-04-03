@@ -2,7 +2,8 @@
 setlocal
 
 set "PORT=8000"
-set "ROOT=%~dp0"
+if not "%~1"=="" set "PORT=%~1"
+set "ROOT=%~dp0..\..\"
 set "PYTHON_CMD="
 
 cd /d "%ROOT%"
