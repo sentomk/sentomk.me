@@ -375,7 +375,7 @@ def build_post_html(title: str, metadata: dict[str, str], body_html: str, kind: 
         </nav>
       </main>
     </div>
-    <script src="../ui.js?v=4"></script>
+    <script src="../ui.js?v=5"></script>
   </body>
 </html>
 """

@@ -247,18 +247,18 @@
   const getActiveLanguage = () => root.dataset.language || "zh";
 
   const syncButtons = (theme) => {
-    const nextLabel = theme === "dark" ? "light" : "dark";
-    const iconMarkup = theme === "dark" ? moonIcon : sunIcon;
+    const nextTheme = theme === "dark" ? "light" : "dark";
+    const iconMarkup = nextTheme === "dark" ? moonIcon : sunIcon;
 
     for (const button of themeButtons) {
       const icon = button.querySelector("svg");
       if (icon) {
         icon.innerHTML = iconMarkup;
       }
-      button.dataset.icon = theme;
-      button.setAttribute("aria-label", `Switch to ${nextLabel} theme`);
+      button.dataset.icon = nextTheme;
+      button.setAttribute("aria-label", `Switch to ${nextTheme} theme`);
       button.setAttribute("aria-pressed", String(theme === "dark"));
-      button.setAttribute("title", `Switch to ${nextLabel} theme`);
+      button.setAttribute("title", `Switch to ${nextTheme} theme`);
     }
   };
 
