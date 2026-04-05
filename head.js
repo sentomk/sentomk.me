@@ -1,6 +1,5 @@
 (() => {
   const root = document.documentElement;
-  const currentScript = document.currentScript;
 
   try {
     const storedTheme = localStorage.getItem("theme");
@@ -17,20 +16,4 @@
   } catch (error) {
     console.warn("Preferences could not be restored.", error);
   }
-
-  if (!currentScript) {
-    return;
-  }
-
-  const faviconHref = new URL("favicon.svg", currentScript.src).href;
-  let favicon = document.querySelector('link[rel~="icon"]');
-
-  if (!favicon) {
-    favicon = document.createElement("link");
-    favicon.rel = "icon";
-    document.head.appendChild(favicon);
-  }
-
-  favicon.type = "image/svg+xml";
-  favicon.href = faviconHref;
 })();
