@@ -243,6 +243,34 @@
     font-variation-settings: "opsz" 72;
   }
 
+  /* Tag filter buttons */
+  .tag-btn {
+    border-color: var(--color-neutral-300);
+    color: var(--color-zag-dark-muted);
+  }
+  :where(.dark, .dark *) .tag-btn {
+    border-color: var(--color-neutral-700);
+  }
+  .tag-btn:hover {
+    border-color: var(--color-zag-dark-muted);
+    color: var(--color-zag-dark);
+  }
+  :where(.dark, .dark *) .tag-btn:hover {
+    border-color: var(--color-zag-light-muted);
+    color: var(--color-zag-light);
+  }
+  .tag-btn.active {
+    border-color: var(--color-zag-dark);
+    color: var(--color-zag-dark);
+    background-color: var(--color-zag-dark);
+    color: var(--color-zag-light);
+  }
+  :where(.dark, .dark *) .tag-btn.active {
+    border-color: var(--color-zag-light);
+    background-color: var(--color-zag-light);
+    color: var(--color-zag-dark);
+  }
+
   /* Custom scrollbar for code blocks */
   pre {
     overflow-x: auto;

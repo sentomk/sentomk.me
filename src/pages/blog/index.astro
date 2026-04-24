@@ -57,10 +57,10 @@ const { data: config } = await getConfigurationCollection();
     </div>
     {
       allTags.length > 0 && (
-        <div id="tag-filter" class="flex gap-2 flex-wrap pb-12">
-          <button data-tag="" class="tag-btn active text-xs zag-text-muted hover:zag-text zag-transition underline underline-offset-4">All</button>
+        <div id="tag-filter" class="flex gap-2 flex-wrap pb-6" role="group" aria-label="Filter by tag">
+          <button data-tag="" class="tag-btn active font-display text-[0.6rem] tracking-wider px-3 py-1.5 border cursor-pointer zag-transition">All</button>
           {allTags.map((tag) => (
-            <button data-tag={tag} class="tag-btn text-xs zag-text-muted hover:zag-text zag-transition underline underline-offset-4">{tag}</button>
+            <button data-tag={tag} class="tag-btn font-display text-[0.6rem] tracking-wider px-3 py-1.5 border cursor-pointer zag-transition">{tag}</button>
           ))}
         </div>
       )

@@ -1,9 +1,9 @@
 ---
 import { getCollection, render } from "astro:content";
-import ArticleSnippet from "../../components/ArticleSnippet.astro";
-import Anchor from "../../components/common/Anchor.astro";
-import SeriesLayout from "../../layouts/SeriesLayout.astro";
-import { getConfigurationCollection } from "../../lib/utils";
+import Section from "../../components/common/Section.astro";
+import Layout from "../../layouts/Layout.astro";
+import Prose from "../../components/Prose.astro";
+import { getConfigurationCollection, processArticleDate } from "../../lib/utils";
 
 export async function getStaticPaths() {
 	const seriesEntries = await getCollection("series");
@@ -36,37 +36,72 @@ const { Content } = await render(series);
 const { data: config } = await getConfigurationCollection();
 ---
 
-<SeriesLayout frontmatter={series.data}>
-  <Content />
-  {
-    posts.length > 0 && (
-      <div class="mt-12">
-        <h2 class="font-display text-xl leading-loose mb-6">Posts in this series</h2>
-        <ul>
-          {posts.map((post, i) => (
-            <li>
-              <ArticleSnippet
-                title={post.data.title}
-                description={post.data.description}
-                url={`/blog/${post.data.slug}`}
-                date={post.data.timestamp}
-                readTime={post.data.readTime}
-                tags={post.data.tags ?? []}
-              />
-            </li>
-          ))}
-        </ul>
-        <!-- Series navigation: link to first post -->
-        <nav class="flex justify-between items-center pt-4 zag-border-b zag-transition pb-4">
-          <div>
-            {posts[0] && (
-              <Anchor url={`/blog/${posts[0].data.slug}`} class="text-sm font-display tracking-wider hover:opacity-70 zag-transition">
-                &larr; Start Reading
-              </Anchor>
-            )}
-          </div>
-        </nav>
+<Layout>
+  <Fragment slot="head">
+    <title>{`${series.data.title} • ${config.personal.name}`}</title>
+    <meta
+      name="description"
+      content={series.data.longDescription ?? series.data.description}
+    />
+    <meta property="og:title" content={`${series.data.title} • ${config.personal.name}`} />
+    <meta property="og:description" content={series.data.description} />
+    {series.data.tags && (
+      <meta name="keywords" content={series.data.tags.join(", ")} />
+    )}
+    {series.data.cardImage && (
+      <meta property="og:image" content={series.data.cardImage} />
+    )}
+    <meta property="og:url" content={`${config.site.baseUrl}/series/${series.data.slug}`} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={`${series.data.title} • ${config.personal.name}`} />
+    <meta name="twitter:description" content={series.data.description} />
+    {series.data.cardImage && (
+      <meta name="twitter:image" content={series.data.cardImage} />
+    )}
+    <meta http-equiv="content-language" content="en" />
+    <meta name="language" content="English" />
+    <link rel="canonical" href={`${config.site.baseUrl}/series/${series.data.slug}`} />
+  </Fragment>
+  <Section class="mt-8">
+    <!-- Series header -->
+    <div class="flex flex-col gap-4 mt-8 mb-12">
+      <h1 class="text-3xl sm:text-4xl leading-tight font-display">
+        {series.data.title}
+      </h1>
+      <div class="flex flex-wrap text-sm gap-2">
+        {series.data.tags
+          ? series.data.tags.map((tag) => (
+              <span class="text-xs font-mono zag-text-muted">#{tag}</span>
+            ))
+          : null}
       </div>
-    )
-  }
-</SeriesLayout>
+      <Prose>
+        <Content />
+      </Prose>
+    </div>
+
+    <!-- Posts list -->
+    {posts.length > 0 && (
+      <div class="zag-border-b zag-transition pb-1 mb-8"></div>
+    )}
+    <ul class="flex flex-col gap-10">
+      {posts.map((post) => (
+        <li>
+          <a href={`/blog/${post.data.slug}`} class="group block no-underline">
+            <span class="font-mono font-medium text-base sm:text-lg group-hover:underline zag-offset">
+              {post.data.title}
+            </span>
+            <p class="font-mono text-sm zag-text-muted mt-1.5 leading-relaxed">
+              {post.data.description}
+            </p>
+            <div class="flex gap-2 mt-3 flex-wrap">
+              {post.data.tags?.map((tag) => (
+                <span class="text-[0.55rem] font-display tracking-widest px-2 py-1 border zag-text-muted">{tag}</span>
+              ))}
+            </div>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </Section>
+</Layout>
