@@ -28,7 +28,7 @@ const { title, description, url, duration, timestamp, tags } = Astro.props;
     {duration ? <p>{duration}</p> : null}
   </div>
   {tags && tags.length > 0 ? (
-    <div class="flex gap-1 flex-wrap text-[0.6rem] font-mono zag-text-muted">
+    <div class="flex gap-1 flex-wrap text-xs font-mono zag-text-muted">
       {tags.map((tag, i) => (
         <span>{i > 0 ? "| " : ""}{tag}</span>
       ))}
