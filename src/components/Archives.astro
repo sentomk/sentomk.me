@@ -5,44 +5,47 @@ const articles = (await getCollection("blog")).sort(
   (a, b) => b.data.timestamp.valueOf() - a.data.timestamp.valueOf(),
 );
 
-const byYear: { year: number; posts: { title: string; url: string; month: string }[] }[] = [];
+type MonthGroup = { month: string; count: number };
+type YearGroup = { year: number; months: MonthGroup[] };
+
+const byYear: YearGroup[] = [];
 for (const article of articles) {
   const year = article.data.timestamp.getFullYear();
+  const month = article.data.timestamp.toLocaleString("default", { month: "short" });
+
   let yearGroup = byYear.find((g) => g.year === year);
   if (!yearGroup) {
-    yearGroup = { year, posts: [] };
+    yearGroup = { year, months: [] };
     byYear.push(yearGroup);
   }
-  const month = article.data.timestamp.toLocaleString("default", { month: "short" });
-  yearGroup.posts.push({
-    title: article.data.title,
-    url: `/posts/${article.data.slug}`,
-    month,
-  });
+
+  let monthGroup = yearGroup.months.find((m) => m.month === month);
+  if (!monthGroup) {
+    monthGroup = { month, count: 0 };
+    yearGroup.months.push(monthGroup);
+  }
+  monthGroup.count++;
 }
 ---
 
 <nav class="text-sm">
   <h2 class="font-display text-base tracking-wider mb-4 zag-text-muted">Archives</h2>
-  <ul class="flex flex-col gap-5">
+  <ul class="flex flex-col gap-4">
     {byYear.map((group) => (
       <li>
-        <h3 class="font-semibold mb-2">{group.year}</h3>
-        <ul class="flex flex-col gap-1.5">
-          {group.posts.map((post) => (
-            <li>
-              <a
-                href={post.url}
-                class="no-underline hover:underline zag-offset leading-snug block"
-              >
-                <span class="text-xs zag-text-muted">{post.month}</span>
-                <br />
-                <span>{post.title}</span>
-              </a>
+        <h3 class="font-semibold mb-1.5">{group.year}</h3>
+        <ul class="flex flex-col gap-1">
+          {group.months.map((m) => (
+            <li class="flex items-center gap-2">
+              <span>{m.month}</span>
+              <span class="zag-text-muted text-xs">({m.count})</span>
             </li>
           ))}
         </ul>
       </li>
     ))}
   </ul>
+  <div class="mt-4 pt-3">
+    <a href="/archives" class="text-xs font-mono no-underline hover:underline zag-text-muted">View All &rarr;</a>
+  </div>
 </nav>

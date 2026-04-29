@@ -13,7 +13,7 @@ const articleDate = processArticleDate(frontmatter.timestamp);
 const { data: config } = await getConfigurationCollection();
 ---
 
-<Layout>
+<Layout hideArchives={true}>
   <Fragment slot="head">
     <title>{`${frontmatter.title} • ${config.personal.name}`}</title>
     <meta
@@ -62,7 +62,7 @@ const { data: config } = await getConfigurationCollection();
   <Section class="pt-8">
     <div class="flex flex-col gap-4 mt-8 mb-16">
       <h1
-        class="text-2xl sm:text-3xl leading-normal sm:leading-normal font-display"
+        class="text-2xl sm:text-3xl leading-normal sm:leading-normal font-sans font-semibold break-words"
       >
         {frontmatter.title}
       </h1>

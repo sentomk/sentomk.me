@@ -15,7 +15,7 @@ const { title, description, url, duration, timestamp, tags } = Astro.props;
 ---
 
 <div class="relative zag-text zag-transition flex flex-col gap-2 mb-10 hover-zag-dotted-grid">
-  <Anchor url={url} class="text-xl">
+  <Anchor url={url} class="text-base sm:text-lg break-words">
     {title}
   </Anchor>
   <p class="">

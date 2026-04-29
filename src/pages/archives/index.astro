@@ -1,0 +1,82 @@
+---
+import { getCollection } from "astro:content";
+import Anchor from "../../components/common/Anchor.astro";
+import Layout from "../../layouts/Layout.astro";
+import { getConfigurationCollection, processArticleDate } from "../../lib/utils";
+
+const articles = (await getCollection("blog")).sort(
+  (a, b) => b.data.timestamp.valueOf() - a.data.timestamp.valueOf(),
+);
+
+type ArticleGroup = { month: string; articles: Array<{ title: string; slug: string; timestamp: Date }> };
+type YearGroup = { year: number; months: ArticleGroup[] };
+
+const byYear: YearGroup[] = [];
+for (const article of articles) {
+  const year = article.data.timestamp.getFullYear();
+  const month = article.data.timestamp.toLocaleString("default", { month: "short" });
+
+  let yearGroup = byYear.find((g) => g.year === year);
+  if (!yearGroup) {
+    yearGroup = { year, months: [] };
+    byYear.push(yearGroup);
+  }
+
+  let monthGroup = yearGroup.months.find((m) => m.month === month);
+  if (!monthGroup) {
+    monthGroup = { month, articles: [] };
+    yearGroup.months.push(monthGroup);
+  }
+  monthGroup.articles.push({
+    title: article.data.title,
+    slug: article.data.slug,
+    timestamp: article.data.timestamp,
+  });
+}
+
+const { data: config } = await getConfigurationCollection();
+const totalArticles = articles.length;
+---
+
+<Layout hideArchives={true}>
+  <Fragment slot="head">
+    <title>Archives &bull; {config.personal.name}</title>
+    <meta name="description" content={`Archives - ${totalArticles} articles`} />
+    <meta property="og:title" content={`Archives &bull; ${config.personal.name}`} />
+    <meta property="og:description" content={`Archives - ${totalArticles} articles`} />
+    <meta property="og:url" content={`${config.site.baseUrl}/archives`} />
+    <meta http-equiv="content-language" content="en" />
+    <meta name="language" content="English" />
+    <link rel="canonical" href={`${config.site.baseUrl}/archives`} />
+  </Fragment>
+  <section class="pt-8">
+    <div class="flex items-center gap-4 pt-8 pb-8">
+      <h1 class="font-display text-xl sm:text-2xl leading-loose">
+        Archives
+      </h1>
+      <span class="zag-text-muted text-sm font-mono">{totalArticles} articles</span>
+    </div>
+    <ul class="flex flex-col gap-8">
+      {byYear.map((group) => (
+        <li>
+          <h2 class="text-lg font-semibold mb-4">{group.year}</h2>
+          <ul class="flex flex-col gap-5">
+            {group.months.map((m) => (
+              <li>
+                <h3 class="text-sm font-mono zag-text-muted mb-2">{m.month} &mdash; {m.articles.length}</h3>
+                <ul class="flex flex-col gap-1 ml-2">
+                  {m.articles.map((article) => (
+                    <li>
+                      <Anchor url={`/posts/${article.slug}`} class="text-base">{article.title}</Anchor>
+                      <span class="text-xs font-mono zag-text-muted">{processArticleDate(article.timestamp)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            ))}
+          </ul>
+        </li>
+      ))}
+    </ul>
+  </section>
+</Layout>
