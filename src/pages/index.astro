@@ -11,26 +11,28 @@ import { getConfigurationCollection } from "../lib/utils";
 const { data: config } = await getConfigurationCollection();
 
 const featuredProjects = (
-	await getCollection("project", (e) => e.data.featured)
-).slice(0, 3)
-.map((e) => ({
-	...e.data,
-  url: `/projects/${e.data.slug}`,
-}));
+		await getCollection("project", (e) => e.data.featured)
+	).sort(
+		(a, b) => b.data.timestamp.valueOf() - a.data.timestamp.valueOf(),
+	).slice(0, 3)
+	.map((e) => ({
+		...e.data,
+	  url: `/projects/${e.data.slug}`,
+	}));
 const featuredSeries = (
-	await getCollection("series", (e) => e.data.featured)
-).slice(0, 3)
-.map((e) => ({
-	...e.data,
-  url: `/series/${e.data.slug}`,
-}));
+		await getCollection("series", (e) => e.data.featured)
+	).slice(0, 3)
+	.map((e) => ({
+		...e.data,
+	  url: `/series/${e.data.slug}`,
+	}));
 const featuredArticles = (
-	await getCollection("blog", (e) => e.data.featured)
-).slice(0, 5)
-.map((e) => ({
-	...e.data,
-  url: `/posts/${e.data.slug}`,
-}));
+		await getCollection("blog", (e) => e.data.featured)
+	).slice(0, 5)
+	.map((e) => ({
+		...e.data,
+	  url: `/posts/${e.data.slug}`,
+	}));
 ---
 
 <Layout>
