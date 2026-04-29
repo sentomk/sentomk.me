@@ -62,9 +62,11 @@ const featuredArticles = (
     <meta name="language" content="English" />
     <link rel="canonical" href={config.site.baseUrl} />
   </Fragment>
-  <Section class="my-16">
-    <Hero />
-  </Section>
+  <Fragment slot="fullwidth">
+    <Section class="my-16 mx-auto">
+      <Hero />
+    </Section>
+  </Fragment>
   <Section>
     <FeaturedProjects featuredProjects={featuredProjects} />
   </Section>

@@ -38,6 +38,7 @@
 */
 
 @theme {
+  --font-sans: "Source Serif 4", Georgia, ui-serif, serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
   --font-display: "press-start-2p", ui-monospace, monospace;
   --font-serif:
